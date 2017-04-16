@@ -1,4 +1,5 @@
-import {browser, by, element, Key} from 'protractor';
+import {browser, by, element, Key, ExpectedConditions} from 'protractor';
+import {screenshot} from '../../screenshot';
 
 describe('checkbox', function () {
 
@@ -12,14 +13,21 @@ describe('checkbox', function () {
       let checkboxEl = element(by.id('test-checkbox'));
       let inputEl = element(by.css('input[id=input-test-checkbox]'));
 
+      screenshot('start');
       checkboxEl.click();
       inputEl.getAttribute('checked').then((value: string) => {
         expect(value).toBeTruthy('Expect checkbox "checked" property to be true');
+        browser.wait(ExpectedConditions.not(
+          ExpectedConditions.presenceOf(element(by.css('div.mat-ripple-element')))))
+          .then(() => screenshot('checked'));
       });
 
       checkboxEl.click();
       inputEl.getAttribute('checked').then((value: string) => {
         expect(value).toBeFalsy('Expect checkbox "checked" property to be false');
+        browser.wait(ExpectedConditions.not(
+          ExpectedConditions.presenceOf(element(by.css('div.mat-ripple-element')))))
+          .then(() => screenshot('unchecked'));
       });
     });
 
@@ -36,6 +44,5 @@ describe('checkbox', function () {
         expect(value).toBeTruthy('Expect checkbox "checked" property to be true');
       });
     });
-
   });
 });

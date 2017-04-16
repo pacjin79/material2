@@ -14,7 +14,7 @@ All you need is to create a `@mixin` function in the custom-component-theme.scss
 
 ```scss
 // Import all the tools needed to customize the theme and extract parts of it
-@import '~@angular/material/core/theming/all-theme';
+@import '~@angular/material/theming';
 
 // Define a mixin that accepts a theme and outputs the color styles for the component.
 @mixin candy-carousel-theme($theme) {
@@ -22,10 +22,10 @@ All you need is to create a `@mixin` function in the custom-component-theme.scss
   $primary: map-get($theme, primary);
   $accent: map-get($theme, accent);
 
-  // Use md-color to extract individual colors from a palette as necessary.
+  // Use mat-color to extract individual colors from a palette as necessary.
   .candy-carousel {
-    background-color: md-color($primary);
-    border-color: md-color($accent, A400);
+    background-color: mat-color($primary);
+    border-color: mat-color($accent, A400);
   }
 }
 ```
@@ -33,7 +33,7 @@ Now you just have to call the `@mixin` function to apply the theme:
 
 ```scss
 // Import a pre-built theme
-@import '~@angular/material/core/theming/prebuilt/deeppurple-amber';
+@import '~@angular/material/prebuilt-themes/deeppurple-amber.css';
 // Import your custom input theme file so you can call the custom-input-theme function
 @import 'app/candy-carousel/candy-carousel-theme.scss';
 
@@ -53,17 +53,18 @@ Styles that are affected by the theme should be placed in a separated theming fi
 
 
 ## Using colors from a palette
-You can consume the theming functions from the `@angular/material/core/theming/theming` and Material palette vars from `@angular/material/core/theming/palette`. You can use the `md-color` function to extract a specific color from a palette. For example:
+You can consume the theming functions and Material palette variables from `@angular/material/theming`.
+You can use the `mat-color` function to extract a specific color from a palette. For example:
 
 ```scss
 // Import theming functions
-@import '~@angular/material/core/theming/theming';
+@import '~@angular/material/theming';
 // Import your custom theme
 @import 'src/unicorn-app-theme.scss';
 
-// Use md-color to extract individual colors from a palette as necessary.
+// Use mat-color to extract individual colors from a palette as necessary.
 .candy-carousel {
-  background-color: md-color($candy-app-primary);
-  border-color: md-color($candy-app-accent, A400);
+  background-color: mat-color($candy-app-primary);
+  border-color: mat-color($candy-app-accent, A400);
 }
 ```

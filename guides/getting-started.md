@@ -1,90 +1,144 @@
-Get started with Angular Material 2 using the Angular CLI.
+For help getting started with a new Angular app, check out the
+[Angular CLI](https://cli.angular.io/).
 
-## Install the CLI
- 
- ```bash
- npm install -g angular-cli
- ```
- 
-## Create a new project
- 
- ```bash
- ng new my-project
- ```
+For existing apps, follow these steps to begin using Angular Material.
 
-The new command creates a project with a build system for your Angular app.
-
-## Install Angular Material components 
+## Step 1: Install Angular Material
 
 ```bash
 npm install --save @angular/material
 ```
 
-## Import the Angular Material NgModule
-  
-**src/app/app.module.ts**
+## Step 2: Animations
+
+Some Material components depend on the Angular animations module in order to be able to do
+more advanced transitions. If you want these animations to work in your app, you have to
+install the `@angular/animations` module and include the `BrowserAnimationsModule` in your app.
+
+```bash
+npm install --save @angular/animations
+```
+
 ```ts
-import { MaterialModule } from '@angular/material';
-// other imports 
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+
 @NgModule({
-  imports: [MaterialModule.forRoot()],
+  ...
+  imports: [BrowserAnimationsModule],
   ...
 })
 export class PizzaPartyAppModule { }
 ```
 
-## Include the core and theme styles:
-This is **required** to apply all of the core and theme styles to your application. You can either
-use a pre-built theme, or define your own custom theme.
+If you don't want to add another dependency to your project, you can use the `NoopAnimationsModule`.
 
-:trident:  See the [theming guide](guides/theming.md) for instructions.
+```ts
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 
-### Additional setup for gestures
-Some components ()`md-slide-toggle`, `md-slider`, `mdTooltip`) rely on 
+@NgModule({
+  ...
+  imports: [NoopAnimationsModule],
+  ...
+})
+export class PizzaPartyAppModule { }
+```
+
+## Step 3: Import the component modules
+
+Import the NgModule for each component you want to use: 
+
+```ts
+import {MdButtonModule, MdCheckboxModule} from '@angular/material';
+
+@NgModule({
+  ...
+  imports: [MdButtonModule, MdCheckboxModule],
+  ...
+})
+export class PizzaPartyAppModule { }
+```
+
+Alternatively, you can create a separate NgModule that imports all of the 
+Angular Material components that you will use in your application. You can then
+include this module wherever you'd like to use the components.
+
+```ts
+import {MdButtonModule, MdCheckboxModule} from '@angular/material';
+
+@NgModule({
+  imports: [MdButtonModule, MdCheckboxModule],
+  exports: [MdButtonModule, MdCheckboxModule],
+})
+export class MyOwnCustomMaterialModule { }
+```
+
+## Step 4: Include a theme
+
+Including a theme is **required** to apply all of the core and theme styles to your application.
+
+To get started with a prebuilt theme, include the following in your app's index.html:
+
+```html
+<link href="../node_modules/@angular/material/prebuilt-themes/indigo-pink.css" rel="stylesheet">
+```
+
+Note that your app's project structure may have a different relative location for your node_modules.
+
+For more information on theming and instructions on how to create a custom theme, see the
+[theming guide](./theming.md).
+
+## Step 5: Gesture Support
+
+Some components (`md-slide-toggle`, `md-slider`, `mdTooltip`) rely on
 [HammerJS](http://hammerjs.github.io/) for gestures. In order to get the full feature-set of these
 components, HammerJS must be loaded into the application.
 
-You can add HammerJS to your application via [npm](https://www.npmjs.com/package/hammerjs), a CDN 
-(such as the [Google CDN](https://developers.google.com/speed/libraries/#hammerjs)), or served 
+You can add HammerJS to your application via [npm](https://www.npmjs.com/package/hammerjs), a CDN
+(such as the [Google CDN](https://developers.google.com/speed/libraries/#hammerjs)), or served
 directly from your app.
 
-#### If you want to include HammerJS from npm, you can install it:
-
+To install via npm, use the following command:
 ```bash
-npm install --save hammerjs 
+npm install --save hammerjs
 ```
 
-After installing, import HammerJS on your app's module.
-**src/app/app.module.ts**
+After installing, import it on your app's root module.
 ```ts
 import 'hammerjs';
 ```
 
-## Configuring SystemJS
-If your project is using SystemJS for module loading, you will need to add `@angular/material` 
+## Step 6 (Optional): Add Material Icons
+
+If you want to use the `md-icon` component with the official 
+[Material Design Icons](https://material.io/icons/), load the icon font in your `index.html`.
+
+```html
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+```
+
+For more information on using Material Icons, check out the
+[Material Icons Guide](https://google.github.io/material-design-icons/).
+
+Note that `md-icon` supports any font or svg icons; using Material Icons is one of many options.
+
+
+## Appendix: Configuring SystemJS
+
+If your project is using SystemJS for module loading, you will need to add `@angular/material`
 to the SystemJS configuration:
 
 ```js
 System.config({
   // existing configuration options
   map: {
-    ...,
-    '@angular/material': 'npm:@angular/material/bundles/material.umd.js'
+    // ...
+    '@angular/material': 'npm:@angular/material/bundles/material.umd.js',
+    // ...
   }
 });
 ```
 
-### [Optional] Using Material Design icons with `md-icon`:
 
-- If you want to use Material Design icons in addition to Angular Material components, 
-load the Material Design font in your `index.html`.  
-`md-icon` supports any font icons or svg icons, so this is only one option for an icon source.
-       
-**src/index.html**
-```html
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-```
-
-## Sample Angular Material 2 projects
-- [Material 2 Sample App](https://github.com/jelbourn/material2-app)
+## Sample Angular Material projects
+- [Material Sample App](https://github.com/jelbourn/material2-app)
 - [Angular Connect 2016 Demo](https://github.com/kara/leashed-in)

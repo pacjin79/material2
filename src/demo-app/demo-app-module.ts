@@ -2,16 +2,21 @@ import {NgModule, ApplicationRef} from '@angular/core';
 import {BrowserModule} from '@angular/platform-browser';
 import {HttpModule} from '@angular/http';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {DemoApp, Home} from './demo-app/demo-app';
 import {RouterModule} from '@angular/router';
-import {MaterialModule} from '@angular/material';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {DemoApp, Home} from './demo-app/demo-app';
+import {
+  MaterialModule,
+  OverlayContainer,
+  FullscreenOverlayContainer,
+  MdSelectionModule,
+} from '@angular/material';
 import {DEMO_APP_ROUTES} from './demo-app/routes';
 import {ProgressBarDemo} from './progress-bar/progress-bar-demo';
-import {JazzDialog, ContentElementDialog, DialogDemo} from './dialog/dialog-demo';
+import {JazzDialog, ContentElementDialog, DialogDemo, IFrameDialog} from './dialog/dialog-demo';
 import {RippleDemo} from './ripple/ripple-demo';
 import {IconDemo} from './icon/icon-demo';
 import {GesturesDemo} from './gestures/gestures-demo';
-import {InputDemo} from './input/input-demo';
 import {CardDemo} from './card/card-demo';
 import {ChipsDemo} from './chips/chips-demo';
 import {RadioDemo} from './radio/radio-demo';
@@ -34,19 +39,22 @@ import {SnackBarDemo} from './snack-bar/snack-bar-demo';
 import {PortalDemo, ScienceJoke} from './portal/portal-demo';
 import {MenuDemo} from './menu/menu-demo';
 import {TabsDemo, SunnyTabContent, RainyTabContent, FoggyTabContent} from './tabs/tabs-demo';
-import {ProjectionDemo, ProjectionTestComponent} from './projection/projection-demo';
 import {PlatformDemo} from './platform/platform-demo';
 import {AutocompleteDemo} from './autocomplete/autocomplete-demo';
-import {InputContainerDemo} from './input/input-container-demo';
+import {InputDemo} from './input/input-demo';
+import {StyleDemo} from './style/style-demo';
+
 
 @NgModule({
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     FormsModule,
     HttpModule,
     ReactiveFormsModule,
     RouterModule.forRoot(DEMO_APP_ROUTES),
     MaterialModule.forRoot(),
+    MdSelectionModule,
   ],
   declarations: [
     AutocompleteDemo,
@@ -63,9 +71,9 @@ import {InputContainerDemo} from './input/input-container-demo';
     Home,
     IconDemo,
     InputDemo,
-    InputContainerDemo,
     JazzDialog,
     ContentElementDialog,
+    IFrameDialog,
     ListDemo,
     LiveAnnouncerDemo,
     MdCheckboxDemoNestedChecklist,
@@ -75,8 +83,6 @@ import {InputContainerDemo} from './input/input-container-demo';
     PortalDemo,
     ProgressBarDemo,
     ProgressSpinnerDemo,
-    ProjectionDemo,
-    ProjectionTestComponent,
     RadioDemo,
     RippleDemo,
     RotiniPanel,
@@ -86,18 +92,23 @@ import {InputContainerDemo} from './input/input-container-demo';
     SliderDemo,
     SlideToggleDemo,
     SpagettiPanel,
+    StyleDemo,
     ToolbarDemo,
     TooltipDemo,
     TabsDemo,
     SunnyTabContent,
     RainyTabContent,
     FoggyTabContent,
-    PlatformDemo
+    PlatformDemo,
+  ],
+  providers: [
+    {provide: OverlayContainer, useClass: FullscreenOverlayContainer}
   ],
   entryComponents: [
     DemoApp,
     JazzDialog,
     ContentElementDialog,
+    IFrameDialog,
     RotiniPanel,
     ScienceJoke,
     SpagettiPanel,

@@ -1,7 +1,7 @@
-import {Component} from '@angular/core';
+import {Component, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed, async} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-import {MdInputModule} from './input';
+import {MdInputModule} from './index';
 import {MdTextareaAutosize} from './autosize';
 
 
@@ -29,7 +29,7 @@ describe('MdTextareaAutosize', () => {
   });
 
   it('should resize the textarea based on its content', () => {
-    let previousHeight = textarea.offsetHeight;
+    let previousHeight = textarea.clientHeight;
 
     fixture.componentInstance.content = `
     Once upon a midnight dreary, while I pondered, weak and weary,
@@ -43,12 +43,12 @@ describe('MdTextareaAutosize', () => {
     fixture.detectChanges();
     autosize.resizeToFitContent();
 
-    expect(textarea.offsetHeight)
+    expect(textarea.clientHeight)
         .toBeGreaterThan(previousHeight, 'Expected textarea to have grown with added content.');
-    expect(textarea.offsetHeight)
+    expect(textarea.clientHeight)
         .toBe(textarea.scrollHeight, 'Expected textarea height to match its scrollHeight');
 
-    previousHeight = textarea.offsetHeight;
+    previousHeight = textarea.clientHeight;
     fixture.componentInstance.content += `
         Ah, distinctly I remember it was in the bleak December;
     And each separate dying ember wrought its ghost upon the floor.
@@ -60,9 +60,9 @@ describe('MdTextareaAutosize', () => {
     fixture.detectChanges();
     autosize.resizeToFitContent();
 
-    expect(textarea.offsetHeight)
+    expect(textarea.clientHeight)
         .toBeGreaterThan(previousHeight, 'Expected textarea to have grown with added content.');
-    expect(textarea.offsetHeight)
+    expect(textarea.clientHeight)
         .toBe(textarea.scrollHeight, 'Expected textarea height to match its scrollHeight');
   });
 
@@ -97,6 +97,33 @@ describe('MdTextareaAutosize', () => {
     expect(parseInt(textarea.style.maxHeight))
         .toBeGreaterThan(previousMaxHeight, 'Expected increased max-height with maxRows increase.');
   });
+
+  it('should export the mdAutosize reference', () => {
+    expect(fixture.componentInstance.autosize).toBeTruthy();
+    expect(fixture.componentInstance.autosize.resizeToFitContent).toBeTruthy();
+  });
+
+
+  it('should properly resize to content on init', () => {
+    // Manually create the test component in this test, because in this test the first change
+    // detection should be triggered after a multiline content is set.
+    fixture = TestBed.createComponent(AutosizeTextAreaWithContent);
+    textarea = fixture.nativeElement.querySelector('textarea');
+    autosize = fixture.debugElement.query(By.css('textarea')).injector.get(MdTextareaAutosize);
+
+    fixture.componentInstance.content = `
+      Line
+      Line
+      Line
+      Line
+      Line`;
+
+    fixture.detectChanges();
+
+    expect(textarea.clientHeight)
+      .toBe(textarea.scrollHeight, 'Expected textarea height to match its scrollHeight');
+  });
+
 });
 
 
@@ -109,17 +136,22 @@ const textareaStyleReset = `
     }`;
 
 @Component({
-  template: `<textarea md-autosize [minRows]="minRows" [maxRows]="maxRows">{{content}}</textarea>`,
+  template: `
+    <textarea mdTextareaAutosize [mdAutosizeMinRows]="minRows" [mdAutosizeMaxRows]="maxRows"
+        #autosize="mdTextareaAutosize">
+      {{content}}
+    </textarea>`,
   styles: [textareaStyleReset],
 })
 class AutosizeTextAreaWithContent {
+  @ViewChild('autosize') autosize: MdTextareaAutosize;
   minRows: number = null;
   maxRows: number = null;
   content: string = '';
 }
 
 @Component({
-  template: `<textarea md-autosize [value]="value"></textarea>`,
+  template: `<textarea mdTextareaAutosize [value]="value"></textarea>`,
   styles: [textareaStyleReset],
 })
 class AutosizeTextAreaWithValue {

@@ -24,6 +24,7 @@ import {ConnectedPositionStrategy} from './position/connected-position-strategy'
 import {Subscription} from 'rxjs/Subscription';
 import {Dir, LayoutDirection} from '../rtl/dir';
 import {Scrollable} from './scroll/scrollable';
+import {coerceBooleanProperty} from '../coercion/boolean-property';
 
 /** Default set of positions for the overlay. Follows the behavior of a dropdown. */
 let defaultPositionList = [
@@ -121,9 +122,8 @@ export class ConnectedOverlayDirective implements OnDestroy {
     return this._hasBackdrop;
   }
 
-  // TODO: move the boolean coercion logic to a shared function in core
   set hasBackdrop(value: any) {
-    this._hasBackdrop = value != null && `${value}` !== 'false';
+    this._hasBackdrop = coerceBooleanProperty(value);
   }
 
   @Input()
@@ -210,8 +210,6 @@ export class ConnectedOverlayDirective implements OnDestroy {
     this._position = this._createPositionStrategy() as ConnectedPositionStrategy;
     overlayConfig.positionStrategy = this._position;
 
-    overlayConfig.direction = this.dir;
-
     return overlayConfig;
   }
 
@@ -223,7 +221,6 @@ export class ConnectedOverlayDirective implements OnDestroy {
 
     const strategy = this._overlay.position()
       .connectedTo(this.origin.elementRef, originPoint, overlayPoint)
-      .withDirection(this.dir)
       .withOffsetX(this.offsetX)
       .withOffsetY(this.offsetY);
 
@@ -249,6 +246,9 @@ export class ConnectedOverlayDirective implements OnDestroy {
     if (!this._overlayRef) {
       this._createOverlay();
     }
+
+    this._position.withDirection(this.dir);
+    this._overlayRef.getState().direction = this.dir;
 
     if (!this._overlayRef.hasAttached()) {
       this._overlayRef.attach(this._templatePortal);
@@ -295,12 +295,14 @@ export class ConnectedOverlayDirective implements OnDestroy {
   imports: [PortalModule],
   exports: [ConnectedOverlayDirective, OverlayOrigin, Scrollable],
   declarations: [ConnectedOverlayDirective, OverlayOrigin, Scrollable],
+  providers: [OVERLAY_PROVIDERS],
 })
 export class OverlayModule {
+  /** @deprecated */
   static forRoot(): ModuleWithProviders {
     return {
       ngModule: OverlayModule,
-      providers: OVERLAY_PROVIDERS,
+      providers: [],
     };
   }
 }

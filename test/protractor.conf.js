@@ -41,9 +41,15 @@ if (process.env['TRAVIS']) {
   config.sauceKey = key;
   config.capabilities = {
     'browserName': 'chrome',
-    'tunnel-identifier': process.env['TRAVIS_JOB_NUMBER'],
-    'build': process.env['TRAVIS_JOB_NUMBER'],
-    'name': 'Material 2 E2E Tests',
+    'version': 'latest',
+    "chromedriverVersion": "2.28",
+    'tunnel-identifier': process.env['TRAVIS_JOB_ID'],
+    'build': process.env['TRAVIS_JOB_ID'],
+    'name': 'Material E2E Tests',
+
+    // Enables concurrent testing in the Webdriver. Currently runs five e2e files in parallel.
+    maxInstances: 5,
+    shardTestFiles: true,
 
     // By default Saucelabs tries to record the whole e2e run. This can slow down the builds.
     'recordVideo': false,

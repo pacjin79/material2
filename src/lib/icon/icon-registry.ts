@@ -11,6 +11,7 @@ import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/share';
 import 'rxjs/add/operator/finally';
 import 'rxjs/add/operator/catch';
+import 'rxjs/add/observable/throw';
 
 
 /**
@@ -287,7 +288,7 @@ export class MdIconRegistry {
     for (let i = iconSetConfigs.length - 1; i >= 0; i--) {
       const config = iconSetConfigs[i];
       if (config.svgElement) {
-        const foundIcon = this._extractSvgIconFromSet(config.svgElement, iconName, config);
+        const foundIcon = this._extractSvgIconFromSet(config.svgElement, iconName);
         if (foundIcon) {
           return foundIcon;
         }
@@ -302,7 +303,7 @@ export class MdIconRegistry {
    */
   private _loadSvgIconFromConfig(config: SvgIconConfig): Observable<SVGElement> {
     return this._fetchUrl(config.url)
-        .map(svgText => this._createSvgElementForSingleIcon(svgText, config));
+        .map(svgText => this._createSvgElementForSingleIcon(svgText));
   }
 
   /**
@@ -318,9 +319,9 @@ export class MdIconRegistry {
   /**
    * Creates a DOM element from the given SVG string, and adds default attributes.
    */
-  private _createSvgElementForSingleIcon(responseText: string, config: SvgIconConfig): SVGElement {
+  private _createSvgElementForSingleIcon(responseText: string): SVGElement {
     const svg = this._svgElementFromString(responseText);
-    this._setSvgAttributes(svg, config);
+    this._setSvgAttributes(svg);
     return svg;
   }
 
@@ -329,8 +330,7 @@ export class MdIconRegistry {
    * tag matches the specified name. If found, copies the nested element to a new SVG element and
    * returns it. Returns null if no matching element is found.
    */
-  private _extractSvgIconFromSet(
-      iconSet: SVGElement, iconName: string, config: SvgIconConfig): SVGElement {
+  private _extractSvgIconFromSet(iconSet: SVGElement, iconName: string): SVGElement {
     const iconNode = iconSet.querySelector('#' + iconName);
     if (!iconNode) {
       return null;
@@ -338,7 +338,7 @@ export class MdIconRegistry {
     // If the icon node is itself an <svg> node, clone and return it directly. If not, set it as
     // the content of a new <svg> node.
     if (iconNode.tagName.toLowerCase() == 'svg') {
-      return this._setSvgAttributes(<SVGElement>iconNode.cloneNode(true), config);
+      return this._setSvgAttributes(iconNode.cloneNode(true) as SVGElement);
     }
     // createElement('SVG') doesn't work as expected; the DOM ends up with
     // the correct nodes, but the SVG content doesn't render. Instead we
@@ -348,7 +348,7 @@ export class MdIconRegistry {
     const svg = this._svgElementFromString('<svg></svg>');
     // Clone the node so we don't remove it from the parent icon set element.
     svg.appendChild(iconNode.cloneNode(true));
-    return this._setSvgAttributes(svg, config);
+    return this._setSvgAttributes(svg);
   }
 
   /**
@@ -359,7 +359,7 @@ export class MdIconRegistry {
     // creating an element from an HTML string.
     const div = document.createElement('DIV');
     div.innerHTML = str;
-    const svg = <SVGElement>div.querySelector('svg');
+    const svg = div.querySelector('svg') as SVGElement;
     if (!svg) {
       throw new MdIconSvgTagNotFoundError();
     }
@@ -369,7 +369,7 @@ export class MdIconRegistry {
   /**
    * Sets the default attributes for an SVG element to be used as an icon.
    */
-  private _setSvgAttributes(svg: SVGElement, config: SvgIconConfig): SVGElement {
+  private _setSvgAttributes(svg: SVGElement): SVGElement {
     if (!svg.getAttribute('xmlns')) {
       svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
     }
@@ -410,6 +410,6 @@ export class MdIconRegistry {
 
 
 /** Clones an SVGElement while preserving type information. */
-function cloneSvg(svg: SVGElement) {
-  return <SVGElement> svg.cloneNode(true);
+function cloneSvg(svg: SVGElement): SVGElement {
+  return svg.cloneNode(true) as SVGElement;
 }

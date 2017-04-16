@@ -2,16 +2,23 @@ import {
   ViewChild,
   Component,
   Input,
-  NgZone,
   QueryList,
   ElementRef,
-  ViewEncapsulation, ContentChildren, Output, EventEmitter, Optional
+  ViewEncapsulation,
+  ContentChildren,
+  Output,
+  EventEmitter,
+  Optional,
+  AfterContentChecked,
+  AfterContentInit,
+  OnDestroy,
 } from '@angular/core';
 import {RIGHT_ARROW, LEFT_ARROW, ENTER, Dir, LayoutDirection} from '../core';
 import {MdTabLabelWrapper} from './tab-label-wrapper';
 import {MdInkBar} from './ink-bar';
-import 'rxjs/add/operator/map';
+import {Subscription} from 'rxjs/Subscription';
 import {applyCssTransform} from '../core/style/apply-transform';
+import 'rxjs/add/operator/map';
 
 /**
  * The directions that scrolling can go in when the header's tabs exceed the header width. 'After'
@@ -31,20 +38,21 @@ const EXAGGERATED_OVERSCROLL = 60;
  * an ink bar that follows the currently selected tab. When the tabs list's width exceeds the
  * width of the header container, then arrows will be displayed to allow the user to scroll
  * left and right across the header.
+ * @docs-private
  */
 @Component({
   moduleId: module.id,
-  selector: 'md-tab-header',
+  selector: 'md-tab-header, mat-tab-header',
   templateUrl: 'tab-header.html',
   styleUrls: ['tab-header.css'],
   encapsulation: ViewEncapsulation.None,
   host: {
-    'class': 'md-tab-header',
-    '[class.md-tab-header-pagination-controls-enabled]': '_showPaginationControls',
-    '[class.md-tab-header-rtl]': "_getLayoutDirection() == 'rtl'",
+    'class': 'mat-tab-header',
+    '[class.mat-tab-header-pagination-controls-enabled]': '_showPaginationControls',
+    '[class.mat-tab-header-rtl]': "_getLayoutDirection() == 'rtl'",
   }
 })
-export class MdTabHeader {
+export class MdTabHeader implements AfterContentChecked, AfterContentInit, OnDestroy {
   @ContentChildren(MdTabLabelWrapper) _labelWrappers: QueryList<MdTabLabelWrapper>;
 
   @ViewChild(MdInkBar) _inkBar: MdInkBar;
@@ -59,6 +67,9 @@ export class MdTabHeader {
 
   /** Whether the header should scroll to the selected index after the view has been checked. */
   private _selectedIndexChanged = false;
+
+  /** Subscription to changes in the layout direction. */
+  private _directionChange: Subscription;
 
   /** Whether the controls for pagination should be displayed */
   _showPaginationControls = false;
@@ -95,9 +106,7 @@ export class MdTabHeader {
   /** Event emitted when a label is focused. */
   @Output() indexFocused = new EventEmitter();
 
-  constructor(private _zone: NgZone,
-              private _elementRef: ElementRef,
-              @Optional() private _dir: Dir) {}
+  constructor(private _elementRef: ElementRef, @Optional() private _dir: Dir) {}
 
   ngAfterContentChecked(): void {
     // If the number of tab labels have changed, check if scrolling should be enabled
@@ -106,12 +115,12 @@ export class MdTabHeader {
       this._tabLabelCount = this._labelWrappers.length;
     }
 
-
     // If the selected index has changed, scroll to the label and check if the scrolling controls
     // should be disabled.
     if (this._selectedIndexChanged) {
       this._scrollToLabel(this._selectedIndex);
       this._checkScrollingControls();
+      this._alignInkBarToSelectedTab();
       this._selectedIndexChanged = false;
     }
 
@@ -121,18 +130,6 @@ export class MdTabHeader {
       this._updateTabScrollPosition();
       this._scrollDistanceChanged = false;
     }
-  }
-
-  /**
-   * Waits one frame for the view to update, then updates the ink bar and scroll.
-   * Note: This must be run outside of the zone or it will create an infinite change detection loop.
-   */
-  ngAfterViewChecked(): void {
-    this._zone.runOutsideAngular(() => {
-      window.requestAnimationFrame(() => {
-        this._alignInkBarToSelectedTab();
-      });
-    });
   }
 
   _handleKeydown(event: KeyboardEvent) {
@@ -147,6 +144,32 @@ export class MdTabHeader {
         this.selectFocusedIndex.emit(this.focusIndex);
         break;
     }
+  }
+
+  /**
+   * Aligns the ink bar to the selected tab on load.
+   */
+  ngAfterContentInit() {
+    this._alignInkBarToSelectedTab();
+
+    if (this._dir) {
+      this._directionChange = this._dir.dirChange.subscribe(() => this._alignInkBarToSelectedTab());
+    }
+  }
+
+  ngOnDestroy() {
+    if (this._directionChange) {
+      this._directionChange.unsubscribe();
+      this._directionChange = null;
+    }
+  }
+
+  /**
+   * Callback for when the MutationObserver detects that the content has changed.
+   */
+  _onContentChanges() {
+    this._updatePagination();
+    this._alignInkBarToSelectedTab();
   }
 
   /**
@@ -178,7 +201,7 @@ export class MdTabHeader {
   _isValidIndex(index: number): boolean {
     if (!this._labelWrappers) { return true; }
 
-    const tab = this._labelWrappers.toArray()[index];
+    const tab = this._labelWrappers ? this._labelWrappers.toArray()[index] : null;
     return tab && !tab.disabled;
   }
 
@@ -282,7 +305,10 @@ export class MdTabHeader {
    * should be called sparingly.
    */
   _scrollToLabel(labelIndex: number) {
-    const selectedLabel = this._labelWrappers.toArray()[labelIndex];
+    const selectedLabel = this._labelWrappers
+        ? this._labelWrappers.toArray()[labelIndex]
+        :  null;
+
     if (!selectedLabel) { return; }
 
     // The view length is the visible width of the tab labels.
@@ -359,6 +385,7 @@ export class MdTabHeader {
     const selectedLabelWrapper = this._labelWrappers && this._labelWrappers.length
         ? this._labelWrappers.toArray()[this.selectedIndex].elementRef.nativeElement
         : null;
+
     this._inkBar.alignToElement(selectedLabelWrapper);
   }
 }
